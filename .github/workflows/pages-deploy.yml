@@ -1,0 +1,37 @@
+# .github/workflows/deploy.yml
+name: Deploy static HTML to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]    # deploy on every push to main
+  workflow_dispatch:       # allow manual runs from the Actions tab
+
+permissions:
+  contents: read           # to read the repo
+  pages: write             # to deploy to Pages
+  id-token: write          # to verify the deployment origin
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # No build step: we just publish the repo root as-is
+      - name: Upload static site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .          # includes index.html at repo root
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
